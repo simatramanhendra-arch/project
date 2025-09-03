@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sistem IT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-purple-100 min-h-screen p-4">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-md">
+    <h2 class="text-2xl font-bold mb-4 text-center text-blue-700">💻 Sistem Permintaan & Pencatatan IT</h2>
+    <div class="flex flex-wrap justify-center gap-2 mb-4">
+      <button onclick="show('permintaanForm')" class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700">Permintaan</button>
+      <button onclick="show('stokForm')" class="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700">Stok Laptop</button>
+      <button onclick="show('asetForm')" class="bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700">Aset IT</button>
+      <button onclick="show('serahForm')" class="bg-orange-600 text-white px-3 py-2 rounded hover:bg-orange-700">Serah Terima</button>
+    </div>
+
+    <!-- Permintaan -->
+    <form id="permintaanForm" class="space-y-4 hidden">
+      <input type="text" id="nama" placeholder="Nama" required class="w-full border p-2 rounded" />
+      <input type="text" id="departemen" placeholder="Departemen" required class="w-full border p-2 rounded" />
+      <input type="text" id="jabatan" placeholder="Jabatan" required class="w-full border p-2 rounded" />
+      <textarea id="spesifikasi" placeholder="Spesifikasi (opsional)" class="w-full border p-2 rounded"></textarea>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Kirim Permintaan</button>
+    </form>
+
+    <!-- Stok Laptop -->
+    <form id="stokForm" class="space-y-4 hidden">
+      <input type="text" id="tipe" placeholder="Tipe Laptop" required class="w-full border p-2 rounded" />
+      <input type="text" id="merk" placeholder="Merk" required class="w-full border p-2 rounded" />
+      <input type="text" id="serial" placeholder="Serial Number" required class="w-full border p-2 rounded" />
+      <input type="text" id="lokasi" placeholder="Lokasi" required class="w-full border p-2 rounded" />
+      <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Simpan Stok</button>
+    </form>
+
+    <!-- Aset IT -->
+    <form id="asetForm" class="space-y-4 hidden">
+      <input type="text" id="aset_nama" placeholder="Nama Aset" required class="w-full border p-2 rounded" />
+      <input type="text" id="aset_kode" placeholder="Kode Aset" required class="w-full border p-2 rounded" />
+      <input type="text" id="aset_lokasi" placeholder="Lokasi Aset" required class="w-full border p-2 rounded" />
+      <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">Simpan Aset</button>
+    </form>
+
+    <!-- Serah Terima -->
+    <form id="serahForm" class="space-y-4 hidden">
+      <input type="text" id="serah_departemen" placeholder="Departemen" required class="w-full border p-2 rounded" />
+      <input type="date" id="serah_tanggal" required class="w-full border p-2 rounded" />
+      <input type="text" id="serah_barang" placeholder="Nama Barang" required class="w-full border p-2 rounded" />
+      <input type="number" id="serah_jumlah" placeholder="Jumlah" required class="w-full border p-2 rounded" />
+      <input type="text" id="serah_penyerah" placeholder="Yang Menyerahkan" required class="w-full border p-2 rounded" />
+      <input type="text" id="serah_penerima" placeholder="Yang Menerima" required class="w-full border p-2 rounded" />
+      <button type="submit" class="w-full bg-orange-600 text-white py-2 rounded hover:bg-orange-700">Kirim Serah Terima</button>
+    </form>
+  </div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAVT3MM_Jl9iDRxk_ibgqLz62kUaVM8khY",
+    authDomain: "tracker-maharaja.firebaseapp.com",
+    databaseURL: "https://tracker-maharaja-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "tracker-maharaja",
+    storageBucket: "tracker-maharaja.appspot.com",
+    messagingSenderId: "371838426691",
+    appId: "1:371838426691:web:afd02cee906912c37c3ef6",
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  function show(id) {
+    ["permintaanForm","stokForm","asetForm","serahForm"].forEach(f => 
+      document.getElementById(f).classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  // permintaan
+  document.getElementById("permintaanForm").addEventListener("submit", e => {
+    e.preventDefault();
+    db.ref("permintaan").push({
+      nama: nama.value,
+      departemen: departemen.value,
+      jabatan: jabatan.value,
+      spesifikasi: spesifikasi.value,
+      waktu: new Date().toLocaleString('id-ID')
+    });
+    alert("Permintaan dikirim!");
+    e.target.reset();
+  });
+
+  // stok
+  document.getElementById("stokForm").addEventListener("submit", e => {
+    e.preventDefault();
+    db.ref("stok").push({
+      tipe: tipe.value,
+      merk: merk.value,
+      serial: serial.value,
+      lokasi: lokasi.value,
+      waktu: new Date().toLocaleString('id-ID')
+    });
+    alert("Stok tersimpan!");
+    e.target.reset();
+  });
+
+  // aset
+  document.getElementById("asetForm").addEventListener("submit", e => {
+    e.preventDefault();
+    db.ref("aset").push({
+      nama: aset_nama.value,
+      kode: aset_kode.value,
+      lokasi: aset_lokasi.value,
+      waktu: new Date().toLocaleString('id-ID')
+    });
+    alert("Aset tersimpan!");
+    e.target.reset();
+  });
+
+  // serah
+  document.getElementById("serahForm").addEventListener("submit", e => {
+    e.preventDefault();
+    db.ref("serah_terima").push({
+      departemen: serah_departemen.value,
+      tanggal: serah_tanggal.value,
+      barang: serah_barang.value,
+      jumlah: serah_jumlah.value,
+      penyerah: serah_penyerah.value,
+      penerima: serah_penerima.value,
+      waktu: new Date().toLocaleString('id-ID')
+    });
+    alert("Data serah terima dikirim!");
+    e.target.reset();
+  });
+</script>
+</body>
+</html>

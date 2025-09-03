@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rekap Sistem IT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-300 min-h-screen p-4">
+
+  <div class="max-w-5xl mx-auto bg-white p-6 rounded-xl shadow-md">
+    <h2 class="text-2xl font-bold text-center text-blue-700 mb-4">📊 Rekap Sistem IT</h2>
+    <div class="space-y-6">
+
+      <!-- Permintaan -->
+      <div>
+        <h3 class="text-xl font-semibold mb-2">Permintaan Laptop</h3>
+        <ul id="listPermintaan" class="space-y-1 text-sm"></ul>
+        <button onclick="downloadPermintaanPDF()" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">⬇️ Download PDF</button>
+      </div>
+
+      <!-- Stok Laptop -->
+      <div>
+        <h3 class="text-xl font-semibold mb-2">Stok Laptop</h3>
+        <ul id="listStok" class="space-y-1 text-sm"></ul>
+        <button onclick="downloadStokPDF()" class="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">⬇️ Download PDF</button>
+      </div>
+
+      <!-- Aset IT -->
+      <div>
+        <h3 class="text-xl font-semibold mb-2">Aset IT</h3>
+        <ul id="listAset" class="space-y-1 text-sm"></ul>
+        <button onclick="downloadAsetPDF()" class="mt-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">⬇️ Download PDF</button>
+      </div>
+
+      <!-- Serah Terima -->
+      <div>
+        <h3 class="text-xl font-semibold mb-2">Serah Terima</h3>
+        <ul id="listSerah" class="space-y-1 text-sm"></ul>
+        <button onclick="downloadSerahPDF()" class="mt-2 bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">⬇️ Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAVT3MM_Jl9iDRxk_ibgqLz62kUaVM8khY",
+    authDomain: "tracker-maharaja.firebaseapp.com",
+    databaseURL: "https://tracker-maharaja-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "tracker-maharaja",
+    storageBucket: "tracker-maharaja.appspot.com",
+    messagingSenderId: "371838426691",
+    appId: "1:371838426691:web:afd02cee906912c37c3ef6",
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // permintaan
+  db.ref("permintaan").on("value", snap => {
+    const list = document.getElementById("listPermintaan");
+    list.innerHTML = "";
+    snap.forEach(child => {
+      const d = child.val();
+      list.innerHTML += `<li>📌 ${d.waktu} - ${d.nama} (${d.departemen}, ${d.jabatan}) ${d.spesifikasi ? `- ${d.spesifikasi}` : ""}</li>`;
+    });
+  });
+
+  // stok
+  db.ref("stok").on("value", snap => {
+    const list = document.getElementById("listStok");
+    list.innerHTML = "";
+    snap.forEach(child => {
+      const d = child.val();
+      list.innerHTML += `<li>💻 ${d.waktu} - ${d.tipe} (${d.merk}), SN: ${d.serial}, lokasi: ${d.lokasi}</li>`;
+    });
+  });
+
+  // aset
+  db.ref("aset").on("value", snap => {
+    const list = document.getElementById("listAset");
+    list.innerHTML = "";
+    snap.forEach(child => {
+      const d = child.val();
+      list.innerHTML += `<li>🖥️ ${d.waktu} - ${d.nama} [${d.kode}] di ${d.lokasi}</li>`;
+    });
+  });
+
+  // serah terima
+  db.ref("serah_terima").on("value", snap => {
+    const list = document.getElementById("listSerah");
+    list.innerHTML = "";
+    snap.forEach(child => {
+      const d = child.val();
+      list.innerHTML += `<li>📄 ${d.waktu} - ${d.departemen}, ${d.tanggal}, Barang: ${d.barang}, Jumlah: ${d.jumlah}, dari ${d.penyerah} ke ${d.penerima}</li>`;
+    });
+  });
+
+  // fungsi download
+  function downloadPermintaanPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 20;
+    doc.setFontSize(14).text("Rekap Permintaan Laptop", 15, 10);
+    db.ref("permintaan").once("value").then(snap => {
+      snap.forEach((child, i) => {
+        const d = child.val();
+        const teks = `${i+1}. ${d.waktu} - ${d.nama} (${d.departemen}, ${d.jabatan}) ${d.spesifikasi || ""}`;
+        doc.text(doc.splitTextToSize(teks, 180), 15, y);
+        y += 10;
+        if (y > 280) { doc.addPage(); y=20; }
+      });
+      const tgl = new Date().toISOString().split("T")[0];
+      doc.save(`permintaan-laptop-${tgl}.pdf`);
+    });
+  }
+
+  function downloadStokPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 20;
+    doc.setFontSize(14).text("Rekap Stok Laptop", 15, 10);
+    db.ref("stok").once("value").then(snap => {
+      snap.forEach((child, i) => {
+        const d = child.val();
+        const teks = `${i+1}. ${d.waktu} - ${d.tipe} (${d.merk}), SN: ${d.serial}, lokasi: ${d.lokasi}`;
+        doc.text(doc.splitTextToSize(teks, 180), 15, y);
+        y += 10;
+        if (y > 280) { doc.addPage(); y=20; }
+      });
+      const tgl = new Date().toISOString().split("T")[0];
+      doc.save(`stok-laptop-${tgl}.pdf`);
+    });
+  }
+
+  function downloadAsetPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 20;
+    doc.setFontSize(14).text("Rekap Aset IT", 15, 10);
+    db.ref("aset").once("value").then(snap => {
+      snap.forEach((child, i) => {
+        const d = child.val();
+        const teks = `${i+1}. ${d.waktu} - ${d.nama} [${d.kode}] di ${d.lokasi}`;
+        doc.text(doc.splitTextToSize(teks, 180), 15, y);
+        y += 10;
+        if (y > 280) { doc.addPage(); y=20; }
+      });
+      const tgl = new Date().toISOString().split("T")[0];
+      doc.save(`aset-it-${tgl}.pdf`);
+    });
+  }
+
+  function downloadSerahPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 20;
+    doc.setFontSize(14).text("Rekap Serah Terima", 15, 10);
+    db.ref("serah_terima").once("value").then(snap => {
+      snap.forEach((child, i) => {
+        const d = child.val();
+        const teks = `${i+1}. ${d.waktu} - ${d.departemen}, ${d.tanggal}, Barang: ${d.barang}, Jumlah: ${d.jumlah}, dari ${d.penyerah} ke ${d.penerima}`;
+        doc.text(doc.splitTextToSize(teks, 180), 15, y);
+        y += 10;
+        if (y > 280) { doc.addPage(); y=20; }
+      });
+      const tgl = new Date().toISOString().split("T")[0];
+      doc.save(`serah-terima-${tgl}.pdf`);
+    });
+  }
+</script>
+</body>
+</html>

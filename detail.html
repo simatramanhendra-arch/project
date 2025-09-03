@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Detail Aset IT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen p-4">
+  <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
+    <h2 class="text-xl font-bold text-center mb-4">📋 Detail Aset IT</h2>
+    <div id="detail" class="space-y-2 text-sm text-gray-700"></div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAVT3MM_Jl9iDRxk_ibgqLz62kUaVM8khY",
+      authDomain: "tracker-maharaja.firebaseapp.com",
+      databaseURL: "https://tracker-maharaja-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "tracker-maharaja",
+      storageBucket: "tracker-maharaja.appspot.com",
+      messagingSenderId: "371838426691",
+      appId: "1:371838426691:web:afd02cee906912c37c3ef6",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const params = new URLSearchParams(window.location.search);
+    const kode = params.get("kode");
+
+    if (kode) {
+      db.ref("aset").orderByChild("kode").equalTo(kode).once("value", snap => {
+        if (snap.exists()) {
+          snap.forEach(child => {
+            const d = child.val();
+            document.getElementById("detail").innerHTML = `
+              <p><strong>Nama:</strong> ${d.nama}</p>
+              <p><strong>Kode:</strong> ${d.kode}</p>
+              <p><strong>Lokasi:</strong> ${d.lokasi}</p>
+              <p><strong>Deskripsi:</strong> ${d.deskripsi || "-"}</p>
+              <p><strong>Tanggal Input:</strong> ${d.waktu}</p>
+            `;
+          });
+        } else {
+          document.getElementById("detail").innerHTML = "Data tidak ditemukan.";
+        }
+      });
+    } else {
+      document.getElementById("detail").innerHTML = "Kode QR tidak valid.";
+    }
+  </script>
+</body>
+</html>

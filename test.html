@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <button onclick="loadData()">Load Data Permintaan</button>
+  <script>
+    function loadData(){
+      fetch('api.php?action=get_perm')
+        .then(res=>res.json())
+        .then(data=>console.log(data));
+    }
+  </script>
+</body>
+</html>
