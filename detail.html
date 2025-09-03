@@ -1,54 +1,54 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <title>Detail Aset IT</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Aset</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #detail { margin-top: 20px; }
+    h2 { margin-bottom: 10px; }
+    p { margin: 5px 0; }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen p-4">
-  <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
-    <h2 class="text-xl font-bold text-center mb-4">📋 Detail Aset IT</h2>
-    <div id="detail" class="space-y-2 text-sm text-gray-700"></div>
-  </div>
+<body>
+  <h1>Detail Aset</h1>
+  <div id="detail">Loading...</div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAVT3MM_Jl9iDRxk_ibgqLz62kUaVM8khY",
-      authDomain: "tracker-maharaja.firebaseapp.com",
-      databaseURL: "https://tracker-maharaja-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "tracker-maharaja",
-      storageBucket: "tracker-maharaja.appspot.com",
-      messagingSenderId: "371838426691",
-      appId: "1:371838426691:web:afd02cee906912c37c3ef6",
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybk3_5ih8xP7lzHYp5FoDo-XBMcNPPhiuglb1KNVoTG_CCKtGJSdO7llUf_8ho-YF8CQ/exec";
 
+    // Ambil parameter serial dari URL
     const params = new URLSearchParams(window.location.search);
-    const kode = params.get("kode");
+    const serial = params.get("serial");
 
-    if (kode) {
-      db.ref("aset").orderByChild("kode").equalTo(kode).once("value", snap => {
-        if (snap.exists()) {
-          snap.forEach(child => {
-            const d = child.val();
-            document.getElementById("detail").innerHTML = `
-              <p><strong>Nama:</strong> ${d.nama}</p>
-              <p><strong>Kode:</strong> ${d.kode}</p>
-              <p><strong>Lokasi:</strong> ${d.lokasi}</p>
-              <p><strong>Deskripsi:</strong> ${d.deskripsi || "-"}</p>
-              <p><strong>Tanggal Input:</strong> ${d.waktu}</p>
-            `;
-          });
+    async function loadDetail() {
+      try {
+        const res = await fetch(SCRIPT_URL);
+        const data = await res.json();
+
+        // Cari data berdasarkan serial
+        const item = data.find(d => d.serial == serial);
+
+        if (item) {
+          document.getElementById("detail").innerHTML = `
+            <h2>Data Aset</h2>
+            <p><b>Tipe:</b> ${item.tipe}</p>
+            <p><b>Merk:</b> ${item.merk}</p>
+            <p><b>Serial:</b> ${item.serial}</p>
+            <p><b>Lokasi:</b> ${item.lokasi}</p>
+            <p><b>Waktu Input:</b> ${item.waktu}</p>
+          `;
         } else {
-          document.getElementById("detail").innerHTML = "Data tidak ditemukan.";
+          document.getElementById("detail").innerHTML = `<p style="color:red">Data tidak ditemukan untuk serial: ${serial}</p>`;
         }
-      });
-    } else {
-      document.getElementById("detail").innerHTML = "Kode QR tidak valid.";
+      } catch (err) {
+        console.error(err);
+        document.getElementById("detail").innerHTML = `<p style="color:red">Gagal load data</p>`;
+      }
     }
+
+    loadDetail();
   </script>
 </body>
 </html>

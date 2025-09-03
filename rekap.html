@@ -1,237 +1,86 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rekap Sistem IT</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekap Data</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f4f4f4; }
+  </style>
 </head>
-<body class="bg-gray-100 p-4">
-  <div class="max-w-6xl mx-auto">
-    <h1 class="text-2xl font-bold mb-4 flex items-center gap-2">📊 Rekap Sistem IT</h1>
-    
-    <!-- Progress Board -->
-    <div class="grid grid-cols-4 gap-4 mb-6">
-      <div class="bg-blue-200 rounded p-4 text-center shadow">
-        <div id="countPermintaan" class="text-3xl font-bold">0</div>
-        <div>Permintaan</div>
-      </div>
-      <div class="bg-green-200 rounded p-4 text-center shadow">
-        <div id="countStok" class="text-3xl font-bold">0</div>
-        <div>Stok</div>
-      </div>
-      <div class="bg-purple-200 rounded p-4 text-center shadow">
-        <div id="countAset" class="text-3xl font-bold">0</div>
-        <div>Aset IT</div>
-      </div>
-      <div class="bg-orange-200 rounded p-4 text-center shadow">
-        <div id="countSerah" class="text-3xl font-bold">0</div>
-        <div>Serah Terima</div>
-      </div>
-    </div>
+<body>
+  <h1>Rekap Semua Data</h1>
+  <table id="rekapTable">
+    <thead>
+      <tr>
+        <th>Form</th>
+        <th>Tipe</th>
+        <th>Merk</th>
+        <th>Serial</th>
+        <th>Lokasi</th>
+        <th>Nama</th>
+        <th>Departemen</th>
+        <th>Jabatan</th>
+        <th>Spesifikasi</th>
+        <th>Tanggal</th>
+        <th>Barang</th>
+        <th>Jumlah</th>
+        <th>Penyerah</th>
+        <th>Penerima</th>
+        <th>Waktu Input</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-    <!-- Permintaan -->
-    <section class="bg-white rounded p-4 shadow mb-6">
-      <div class="flex justify-between mb-2">
-        <h2 class="font-semibold text-lg">Permintaan</h2>
-        <button onclick="downloadPDF('permintaanTable')" class="bg-blue-500 text-white px-3 py-1 rounded">Download PDF</button>
-      </div>
-      <div id="permintaanTable" class="overflow-x-auto">
-        <table class="w-full border text-sm">
-          <thead class="bg-blue-100">
-            <tr>
-              <th class="border p-1">No</th>
-              <th class="border p-1">Nama</th>
-              <th class="border p-1">Departemen</th>
-              <th class="border p-1">Jabatan</th>
-              <th class="border p-1">Spesifikasi</th>
-              <th class="border p-1">Waktu</th>
-            </tr>
-          </thead>
-          <tbody id="permintaanBody"></tbody>
-        </table>
-      </div>
-    </section>
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybk3_5ih8xP7lzHYp5FoDo-XBMcNPPhiuglb1KNVoTG_CCKtGJSdO7llUf_8ho-YF8CQ/exec";
 
-    <!-- Stok -->
-    <section class="bg-white rounded p-4 shadow mb-6">
-      <div class="flex justify-between mb-2">
-        <h2 class="font-semibold text-lg">Stok Laptop</h2>
-        <button onclick="downloadPDF('stokTable')" class="bg-green-500 text-white px-3 py-1 rounded">Download PDF</button>
-      </div>
-      <div id="stokTable" class="overflow-x-auto">
-        <table class="w-full border text-sm">
-          <thead class="bg-green-100">
-            <tr>
-              <th class="border p-1">No</th>
-              <th class="border p-1">Tipe</th>
-              <th class="border p-1">Merk</th>
-              <th class="border p-1">Serial</th>
-              <th class="border p-1">Lokasi</th>
-              <th class="border p-1">Waktu</th>
-            </tr>
-          </thead>
-          <tbody id="stokBody"></tbody>
-        </table>
-      </div>
-    </section>
+    async function loadRekap() {
+      try {
+        const res = await fetch(SCRIPT_URL);
+        const data = await res.json();
 
-    <!-- Aset -->
-    <section class="bg-white rounded p-4 shadow mb-6">
-      <div class="flex justify-between mb-2">
-        <h2 class="font-semibold text-lg">Aset IT</h2>
-        <button onclick="downloadPDF('asetTable')" class="bg-purple-500 text-white px-3 py-1 rounded">Download PDF</button>
-      </div>
-      <div id="asetTable" class="overflow-x-auto">
-        <table class="w-full border text-sm">
-          <thead class="bg-purple-100">
-            <tr>
-              <th class="border p-1">No</th>
-              <th class="border p-1">Nama</th>
-              <th class="border p-1">Kode</th>
-              <th class="border p-1">Lokasi</th>
-              <th class="border p-1">Waktu</th>
-            </tr>
-          </thead>
-          <tbody id="asetBody"></tbody>
-        </table>
-      </div>
-    </section>
+        const tbody = document.querySelector("#rekapTable tbody");
+        tbody.innerHTML = "";
 
-    <!-- Serah Terima -->
-    <section class="bg-white rounded p-4 shadow mb-6">
-      <div class="flex justify-between mb-2">
-        <h2 class="font-semibold text-lg">Serah Terima</h2>
-        <button onclick="downloadPDF('serahTable')" class="bg-orange-500 text-white px-3 py-1 rounded">Download PDF</button>
-      </div>
-      <div id="serahTable" class="overflow-x-auto">
-        <table class="w-full border text-sm">
-          <thead class="bg-orange-100">
-            <tr>
-              <th class="border p-1">No</th>
-              <th class="border p-1">Departemen</th>
-              <th class="border p-1">Tanggal</th>
-              <th class="border p-1">Barang</th>
-              <th class="border p-1">Jumlah</th>
-              <th class="border p-1">Penyerah</th>
-              <th class="border p-1">Penerima</th>
-              <th class="border p-1">Waktu</th>
-            </tr>
-          </thead>
-          <tbody id="serahBody"></tbody>
-        </table>
-      </div>
-    </section>
-  </div>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAVT3MM_Jl9iDRxk_ibgqLz62kUaVM8khY",
-    authDomain: "tracker-maharaja.firebaseapp.com",
-    databaseURL: "https://tracker-maharaja-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "tracker-maharaja",
-    storageBucket: "tracker-maharaja.appspot.com",
-    messagingSenderId: "371838426691",
-    appId: "1:371838426691:web:afd02cee906912c37c3ef6"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  // Permintaan
-  db.ref("permintaan").on("value", snap => {
-    const data = snap.val();
-    const tbody = document.getElementById("permintaanBody");
-    tbody.innerHTML = "";
-    let no = 1;
-    for (let id in data) {
-      tbody.innerHTML += `
-        <tr>
-          <td class="border p-1">${no++}</td>
-          <td class="border p-1">${data[id].nama}</td>
-          <td class="border p-1">${data[id].departemen || '-'}</td>
-          <td class="border p-1">${data[id].jabatan || '-'}</td>
-          <td class="border p-1">${data[id].spesifikasi || '-'}</td>
-          <td class="border p-1">${data[id].waktu}</td>
-        </tr>`;
+        if (data.length > 0) {
+          data.forEach(item => {
+            const row = `
+              <tr>
+                <td>${item.form || "-"}</td>
+                <td>${item.tipe || "-"}</td>
+                <td>${item.merk || "-"}</td>
+                <td>${item.serial || "-"}</td>
+                <td>${item.lokasi || "-"}</td>
+                <td>${item.nama || "-"}</td>
+                <td>${item.departemen || "-"}</td>
+                <td>${item.jabatan || "-"}</td>
+                <td>${item.spesifikasi || "-"}</td>
+                <td>${item.tanggal || "-"}</td>
+                <td>${item.barang || "-"}</td>
+                <td>${item.jumlah || "-"}</td>
+                <td>${item.penyerah || "-"}</td>
+                <td>${item.penerima || "-"}</td>
+                <td>${item.waktu || "-"}</td>
+              </tr>
+            `;
+            tbody.innerHTML += row;
+          });
+        } else {
+          tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; color:red">Belum ada data</td></tr>`;
+        }
+      } catch (err) {
+        console.error(err);
+        document.querySelector("#rekapTable tbody").innerHTML = `<tr><td colspan="15" style="text-align:center; color:red">Gagal load data</td></tr>`;
+      }
     }
-    document.getElementById("countPermintaan").innerText = snap.numChildren();
-  });
 
-  // Stok
-  db.ref("stok").on("value", snap => {
-    const tbody = document.getElementById("stokBody");
-    tbody.innerHTML = "";
-    let no = 1;
-    for (let id in snap.val()) {
-      const d = snap.val()[id];
-      tbody.innerHTML += `
-        <tr>
-          <td class="border p-1">${no++}</td>
-          <td class="border p-1">${d.tipe}</td>
-          <td class="border p-1">${d.merk}</td>
-          <td class="border p-1">${d.serial}</td>
-          <td class="border p-1">${d.lokasi}</td>
-          <td class="border p-1">${d.waktu}</td>
-        </tr>`;
-    }
-    document.getElementById("countStok").innerText = snap.numChildren();
-  });
-
-  // Aset
-  db.ref("aset").on("value", snap => {
-    const tbody = document.getElementById("asetBody");
-    tbody.innerHTML = "";
-    let no = 1;
-    for (let id in snap.val()) {
-      const d = snap.val()[id];
-      tbody.innerHTML += `
-        <tr>
-          <td class="border p-1">${no++}</td>
-          <td class="border p-1">${d.nama}</td>
-          <td class="border p-1">${d.kode}</td>
-          <td class="border p-1">${d.lokasi}</td>
-          <td class="border p-1">${d.waktu}</td>
-        </tr>`;
-    }
-    document.getElementById("countAset").innerText = snap.numChildren();
-  });
-
-  // Serah Terima
-  db.ref("serah_terima").on("value", snap => {
-    const tbody = document.getElementById("serahBody");
-    tbody.innerHTML = "";
-    let no = 1;
-    for (let id in snap.val()) {
-      const d = snap.val()[id];
-      tbody.innerHTML += `
-        <tr>
-          <td class="border p-1">${no++}</td>
-          <td class="border p-1">${d.departemen}</td>
-          <td class="border p-1">${d.tanggal}</td>
-          <td class="border p-1">${d.barang}</td>
-          <td class="border p-1">${d.jumlah}</td>
-          <td class="border p-1">${d.penyerah}</td>
-          <td class="border p-1">${d.penerima}</td>
-          <td class="border p-1">${d.waktu}</td>
-        </tr>`;
-    }
-    document.getElementById("countSerah").innerText = snap.numChildren();
-  });
-
-  function downloadPDF(sectionId) {
-    const el = document.getElementById(sectionId);
-    const opt = {
-      margin: 5,
-      filename: sectionId + '.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, scrollX: 0, scrollY: 0 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-    };
-    html2pdf().set(opt).from(el).save();
-  }
-</script>
+    loadRekap();
+  </script>
 </body>
 </html>
